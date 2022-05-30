@@ -1,0 +1,93 @@
+@import url("https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap");
+
+:root {
+  --main-font: "Nanum Gothic Coding", monospace;
+}
+
+body {
+  background-color: #354259;
+}
+
+h1 {
+  font-family: var(--main-font);
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  border: 2px solid black;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-size: 2rem;
+}
+
+.link {
+  color: black;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  height: 300px;
+  border: 2px solid black;
+  background-color: #f24c4c;
+}
+
+.formRow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 10px;
+  font-family: var(--main-font);
+}
+
+.nameInput {
+  width: 300px;
+  height: 25px;
+  background-color: #354259;
+  border: 1px solid black;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.visualizer {
+  z-index: -99;
+  width: 200px;
+  height: 200px;
+  width: 100vw;
+  height: 100vh;
+}
+
+label {
+  font-size: 1.5rem;
+  font-family: var(--main-font);
+}
+
+button {
+  width: 100%;
+  max-width: 300px;
+  margin: auto;
+  background-color: #354259;
+  border: 1px solid black;
+  height: 50px;
+  font-size: 2rem;
+  cursor: pointer;
+  font-family: var(--main-font);
+}
