@@ -1,13 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import Visualizer from "../components/Visualizer";
 
+import io from "socket.io-client";
+
 import { useEffect, useState, useRef } from "react";
 import useAudioContext from "../hooks/useAudioContext";
-import useSocket from "../hooks/useSocket";
+//import useSocket from "../hooks/useSocket";
+
+const socket = io();
 
 function User() {
   const { audioCtx, gain, oscillator } = useAudioContext();
-  const { socket } = useSocket("http://192.168.1.111:8080");
+  //const { socket } = useSocket("http://192.168.1.111:8080");
 
   //const [socket, setSocket] = useState();
   const [active, setActive] = useState(false);

@@ -1,11 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useRef } from "react";
+import io from "socket.io-client";
 
 import Controls from "../components/Controls";
-import useSocket from "../hooks/useSocket";
+//import useSocket from "../hooks/useSocket";
+
+const socket = io();
 
 function Admin() {
-  const { socket } = useSocket("http://192.168.1.111:8080");
+  //const { socket } = useSocket("http://192.168.1.111:8080");
   const [users, setUsers] = useState([]);
   const [count, setCount] = useState(0);
   // const [basePitch, setBasePitch] = useState(130.813);
