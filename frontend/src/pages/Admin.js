@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import io from "socket.io-client";
 
 import Controls from "../components/Controls";
@@ -8,8 +9,14 @@ import Controls from "../components/Controls";
 const socket = io();
 
 function Admin() {
+  const location = useLocation();
+
+  const [name, setName] = useState();
+  const [uuid, setUuid] = useState();
+
   //const { socket } = useSocket("http://192.168.1.111:8080");
   const [users, setUsers] = useState([]);
+  const [usersCheck, setUsersCheck] = useState([]);
   const [count, setCount] = useState(0);
   // const [basePitch, setBasePitch] = useState(130.813);
 
@@ -17,18 +24,28 @@ function Admin() {
   const attackRef = useRef();
   const releaseRef = useRef();
   const holdRef = useRef();
+  const basePitchRef = useRef();
+  const countRef = useRef(0);
+
+  const checkIfUserLeft = () => {
+    const newUsers = users.filter((user) => usersCheck.includes(user.id));
+    setUsers(newUsers);
+  };
+
+  useEffect(() => {
+    setName(location.state.name);
+    setUuid(location.state.uuid);
+  }, []);
 
   const handleChange = () => {
     socket.emit("env", {
       attack: attackRef.current.value,
       release: releaseRef.current.value,
       hold: holdRef.current.value,
+      basePitch: holdRef.current.value,
+      room: uuid,
     });
   };
-
-  // const changeBasePitch = (e) => {
-  //   setBasePitch(e.target.value);
-  // };
 
   const speedRange = (speed) => {
     return (speed * -1 + 101) * 20;
@@ -41,35 +58,50 @@ function Admin() {
         setUsers((prev) => {
           return [...prev, { name: data.name, id: data.id }];
         });
+        socket.emit("sendName", { name, id: data.id });
       });
+
+      socket.on("isHere", (data) => {
+        setUsersCheck((prev) => {
+          return [...prev, data];
+        });
+      });
+
+      socket.emit("createRoom", { uuid });
     }
   }, [socket]);
 
   // listen for users to go
   useEffect(() => {
     if (socket) {
-      socket.on("userdisconnecting", (id) => {
+      socket.on("leaving", (id) => {
         const newUsers = users.filter((user) => user.id !== id);
         setUsers(newUsers);
       });
+      countRef.current = users.length;
     }
   }, [users]);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      if (users.length === 0) return;
+      if (countRef.current <= 1) {
+        setCount(0);
+        return;
+      }
       setCount(count + 1);
-      if (count >= users.length) {
+      if (count >= countRef.current) {
+        checkIfUserLeft();
+        setUsersCheck([]);
         setCount(1);
       }
-    }, speedRange(speedRef.current.value)); // clearing interval
-    return () => clearInterval(timer);
-  });
+    }, speedRange(speedRef.current.value));
+    return () => clearInterval(timer); // clearing interval
+  }, [count, usersCheck]);
 
   return (
     <div className="App">
-      <h1>Admin</h1>
-
+      <h1>{name}</h1>
+      <p>your id: {uuid}</p>
       <label htmlFor="speed">Speed</label>
       <input
         id="speed"
@@ -110,14 +142,15 @@ function Admin() {
         onChange={handleChange}
       ></input>
 
-      {/* <label htmlFor="tune">Tune</label>
+      <label htmlFor="tune">Tune</label>
       <input
         id="tune"
         type="range"
         min="130.813"
         max="523.251"
-        onChange={changeBasePitch}
-      ></input> */}
+        ref={basePitchRef}
+        onChange={handleChange}
+      ></input>
 
       <h3>{count}</h3>
       {users

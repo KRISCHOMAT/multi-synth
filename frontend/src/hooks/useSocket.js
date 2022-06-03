@@ -8,8 +8,7 @@ const useSocket = (connectionString) => {
 
   useEffect(() => {
     if (didMountRef.current) {
-      //setSocket(io.connect(connectionString));
-      setSocket(io());
+      setSocket(io.connect(connectionString));
     }
     didMountRef.current = true;
   }, []);

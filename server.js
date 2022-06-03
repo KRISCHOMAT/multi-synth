@@ -7,8 +7,8 @@ const { Server } = require("socket.io");
 // for development
 // const io = require("socket.io")(server, {
 //   cors: {
-//     //origin: "http://localhost:3000",
-//     origin: "http://192.168.1.111:3000",
+//     origin: "http://localhost:3000",
+//     //origin: "http://192.168.1.111:3000",
 //     methods: ["GET", "POST"],
 //   },
 // });
@@ -20,15 +20,26 @@ const port = process.env.PORT || 8080;
 
 // for production
 app.use(express.static(__dirname + "/frontend/build"));
-app.get("/", function (req, res) {
-  res.sendFile("/index.html");
+
+app.get("*", function (req, res) {
+  res.sendFile(__dirname, "frontend/build", "/index.html");
 });
 
 // Socket IO
 io.on("connection", (socket) => {
-  socket.on("enterUser", (name) => {
-    const data = { id: socket.id, name: name };
-    socket.broadcast.emit("userJoining", data);
+  socket.on("enterUser", (data) => {
+    const values = { id: socket.id, name: data.name };
+    socket.join(data.roomId);
+    socket.to(data.roomId).emit("userJoining", values);
+  });
+
+  socket.on("createRoom", (data) => {
+    socket.join(data.uuid);
+  });
+
+  socket.on("sendName", (data) => {
+    //socket.join(data.id);
+    socket.to(data.id).emit("receiveRoomName", data.name);
   });
 
   socket.on("pitch", (data) => {
@@ -43,13 +54,20 @@ io.on("connection", (socket) => {
     socket.to(id).emit("unactive");
   });
 
-  socket.on("env", (data) => {
-    socket.broadcast.emit("env", data);
+  socket.on("available", (data) => {
+    socket.to(data).emit("isHere", socket.id);
   });
 
-  socket.on("disconnect" || "refresh", () => {
-    socket.broadcast.emit("userdisconnecting", socket.id);
+  socket.on("env", (data) => {
+    const values = {
+      attack: data.attack,
+      release: data.release,
+      hold: data.hold,
+    };
+    socket.to(data.room).emit("env", values);
   });
+
+  socket.on("leaving", (data) => {});
 });
 
 server.listen(port, () => {

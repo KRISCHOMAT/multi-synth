@@ -4,14 +4,16 @@ import { Link } from "react-router-dom";
 const Landing = () => {
   return (
     <div className="App">
-      <h1>Welcome</h1>
-      <div className="links">
-        <Link className="link" to="/user">
-          User
-        </Link>
-        <Link className="link" to="/admin">
-          Admin
-        </Link>
+      <div className="form">
+        <h1>The Multi Web SQ</h1>
+        <div className="links">
+          <Link className="link" to="/create">
+            Create A Sequence
+          </Link>
+          <Link className="link" to="/user">
+            Log Into Sequence
+          </Link>
+        </div>
       </div>
     </div>
   );

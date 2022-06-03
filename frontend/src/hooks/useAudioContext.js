@@ -11,7 +11,7 @@ const useAudioContext = () => {
 
   useEffect(() => {
     oscillator.type = "triangle";
-    //oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // value in hertz
+
     oscillator.connect(gain);
 
     analyser.fftSize = 2048;

@@ -3,38 +3,53 @@ import Visualizer from "../components/Visualizer";
 
 import io from "socket.io-client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import useAudioContext from "../hooks/useAudioContext";
+
+// use for dev
 //import useSocket from "../hooks/useSocket";
 
 const socket = io();
 
 function User() {
   const { audioCtx, gain, oscillator } = useAudioContext();
-  //const { socket } = useSocket("http://192.168.1.111:8080");
 
-  //const [socket, setSocket] = useState();
+  // use for dev
+  //const { socket } = useSocket("http://192.168.1.111:8080");
+  //  const { socket } = useSocket("http://localhost:8080");
+
   const [active, setActive] = useState(false);
 
   const [start, setStart] = useState(false);
+  const [room, setRoom] = useState("");
 
-  const [attack, setAttack] = useState(1);
-  const [release, setRelease] = useState(1);
-  const [hold, setHold] = useState(1);
-  const [pitch, setPitch] = useState(200);
+  const [loginValues, setLoginvalues] = useState({ name: "", roomId: "" });
 
-  //const didMountRef = useRef(false);
-  const nameRef = useRef();
+  const [attack, setAttack] = useState(0.3);
+  const [release, setRelease] = useState(0.5);
+  const [hold, setHold] = useState(0.1);
+  const [pitch, setPitch] = useState(0);
 
-  const handleClick = () => {
+  const didMount = useRef(false);
+
+  const handleChange = (e) => {
+    setLoginvalues((prevValues) => {
+      return {
+        ...prevValues,
+        [e.target.name]: e.target.value,
+      };
+    });
+  };
+
+  const handleClick = async () => {
     oscillator.start();
     setStart(true);
-    socket.emit("enterUser", nameRef.current.value);
+    socket.emit("enterUser", loginValues);
   };
 
   // init sockets when socket is available
   useEffect(() => {
-    if (socket) {
+    if (socket && didMount.current) {
       socket.on("active", () => {
         setActive(true);
       });
@@ -44,27 +59,34 @@ function User() {
       });
 
       socket.on("env", (data) => {
-        setRelease(data.release / 50 + 0.2);
-        setAttack(data.attack / 50 + 0.2);
-        setHold(data.hold * 10);
+        setRelease(data.release / 50 + 0.3);
+        setAttack(data.attack / 50 + 0.3);
+        setHold(data.hold * 10 + 0.3);
+      });
+
+      socket.on("receiveRoomName", (data) => {
+        setRoom(data);
       });
 
       socket.on("pitch", (data) => {
         setPitch(data);
       });
       // check if user refreshs the page
-      window.addEventListener("beforeunload", () => {
-        socket.emit("refresh");
-      });
     }
-    return window.removeEventListener("beforeunload", () => {
-      socket.emit("refresh");
-    });
+    didMount.current = true;
   }, [socket]);
+
+  useEffect(() => {
+    window.addEventListener("unload", () => {
+      socket.emit("leaving");
+    });
+  });
 
   //check if user is active
   useEffect(() => {
     if (active) {
+      socket.emit("available", loginValues.roomId);
+
       gain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + attack);
       setTimeout(() => {
         gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + release);
@@ -77,14 +99,30 @@ function User() {
     oscillator.frequency.setValueAtTime(pitch, audioCtx.currentTime);
   }, [pitch]);
 
+  useEffect(() => {
+    gain.gain.setValueAtTime(0, audioCtx.currentTime);
+  }, []);
+
   if (!start) {
     return (
       <div className="App">
         <div className="form">
           <h1>The Multi Synth</h1>
           <div className="formRow">
-            <label htmlFor="name">Name</label>
-            <input id="name" className="nameInput" ref={nameRef}></input>
+            <label htmlFor="name">Your Name</label>
+            <input
+              id="name"
+              name="name"
+              className="nameInput"
+              onChange={handleChange}
+            ></input>
+            <label htmlFor="roomId">Room ID</label>
+            <input
+              id="roomId"
+              name="roomId"
+              className="nameInput"
+              onChange={handleChange}
+            ></input>
           </div>
           <button onClick={handleClick}>START</button>
         </div>
@@ -98,6 +136,7 @@ function User() {
       active={active}
       setActive={setActive}
       pitch={pitch}
+      room={room}
     />
   );
 }
