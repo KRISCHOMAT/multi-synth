@@ -9,14 +9,16 @@ import useAudioContext from "../hooks/useAudioContext";
 // use for dev
 //import useSocket from "../hooks/useSocket";
 
-const socket = io();
+//const socket = io();
 
 function User() {
   const { audioCtx, gain, oscillator } = useAudioContext();
 
   // use for dev
   //const { socket } = useSocket("http://192.168.1.111:8080");
-  //  const { socket } = useSocket("http://localhost:8080");
+  //const { socket } = useSocket("http://localhost:8080");
+  //const { socket } = useSocket();
+  const [socket, setSocket] = useState();
 
   const [active, setActive] = useState(false);
 
@@ -46,6 +48,10 @@ function User() {
     setStart(true);
     socket.emit("enterUser", loginValues);
   };
+
+  useEffect(() => {
+    setSocket(io());
+  }, []);
 
   // init sockets when socket is available
   useEffect(() => {

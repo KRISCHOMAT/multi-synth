@@ -6,15 +6,17 @@ import io from "socket.io-client";
 import Controls from "../components/Controls";
 //import useSocket from "../hooks/useSocket";
 
-const socket = io();
-
 function Admin() {
+  //const socket = io();
   const location = useLocation();
 
   const [name, setName] = useState();
   const [uuid, setUuid] = useState();
+  const [socket, setSocket] = useState();
 
   //const { socket } = useSocket("http://192.168.1.111:8080");
+  //const { socket } = useSocket();
+
   const [users, setUsers] = useState([]);
   const [usersCheck, setUsersCheck] = useState([]);
   const [count, setCount] = useState(0);
@@ -35,6 +37,7 @@ function Admin() {
   useEffect(() => {
     setName(location.state.name);
     setUuid(location.state.uuid);
+    setSocket(io());
   }, []);
 
   const handleChange = () => {
