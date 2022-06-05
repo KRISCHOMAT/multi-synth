@@ -6,18 +6,9 @@ import io from "socket.io-client";
 import { useEffect, useRef, useState } from "react";
 import useAudioContext from "../hooks/useAudioContext";
 
-// use for dev
-//import useSocket from "../hooks/useSocket";
-
-//const socket = io();
-
 function User() {
   const { audioCtx, gain, oscillator } = useAudioContext();
 
-  // use for dev
-  //const { socket } = useSocket("http://192.168.1.111:8080");
-  //const { socket } = useSocket("http://localhost:8080");
-  //const { socket } = useSocket();
   const [socket, setSocket] = useState();
 
   const [active, setActive] = useState(false);
@@ -30,9 +21,10 @@ function User() {
   const [attack, setAttack] = useState(0.3);
   const [release, setRelease] = useState(0.5);
   const [hold, setHold] = useState(0.1);
-  const [pitch, setPitch] = useState(0);
+  const [pitch, setPitch] = useState(1);
+  const [basePitch, setBasePitch] = useState(200);
 
-  const didMount = useRef(false);
+  const didMountRef = useRef(false);
 
   const handleChange = (e) => {
     setLoginvalues((prevValues) => {
@@ -50,12 +42,16 @@ function User() {
   };
 
   useEffect(() => {
-    setSocket(io());
+    if (didMountRef.current) {
+      //setSocket(io.connect("http://localhost:8080"));
+      setSocket(io());
+    }
+    didMountRef.current = true;
   }, []);
 
   // init sockets when socket is available
   useEffect(() => {
-    if (socket && didMount.current) {
+    if (socket) {
       socket.on("active", () => {
         setActive(true);
       });
@@ -68,6 +64,7 @@ function User() {
         setRelease(data.release / 50 + 0.3);
         setAttack(data.attack / 50 + 0.3);
         setHold(data.hold * 10 + 0.3);
+        setBasePitch(data.basePitch);
       });
 
       socket.on("receiveRoomName", (data) => {
@@ -75,22 +72,15 @@ function User() {
       });
 
       socket.on("pitch", (data) => {
+        console.log(data);
         setPitch(data);
       });
-      // check if user refreshs the page
     }
-    didMount.current = true;
   }, [socket]);
 
   useEffect(() => {
-    window.addEventListener("unload", () => {
-      socket.emit("leaving");
-    });
-  });
-
-  //check if user is active
-  useEffect(() => {
     if (active) {
+      //check if user is active
       socket.emit("available", loginValues.roomId);
 
       gain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + attack);
@@ -102,8 +92,11 @@ function User() {
 
   // change pitch
   useEffect(() => {
-    oscillator.frequency.setValueAtTime(pitch, audioCtx.currentTime);
-  }, [pitch]);
+    oscillator.frequency.setValueAtTime(
+      basePitch + (basePitch * pitch) / 12,
+      audioCtx.currentTime
+    );
+  }, [pitch, basePitch]);
 
   useEffect(() => {
     gain.gain.setValueAtTime(0, audioCtx.currentTime);
@@ -142,6 +135,7 @@ function User() {
       active={active}
       setActive={setActive}
       pitch={pitch}
+      basePitch={basePitch}
       room={room}
     />
   );

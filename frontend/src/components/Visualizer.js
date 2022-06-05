@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 
-const Visualizer = ({ socket, active, setActive, pitch, room }) => {
+const Visualizer = ({ socket, active, setActive, pitch, basePitch, room }) => {
   useEffect(() => {
     socket.on(
       "active",
@@ -11,12 +11,16 @@ const Visualizer = ({ socket, active, setActive, pitch, room }) => {
     );
   });
 
+  const calcPitch = () => {
+    return basePitch + (basePitch * pitch) / 12;
+  };
+
   return (
     <div
       className="visualizer App"
       style={
         active
-          ? { opacity: pitch / 1000, backgroundColor: "#f24c4c" }
+          ? { opacity: calcPitch(), backgroundColor: "#f24c4c" }
           : { opacity: 0, backgroundColor: "#f24c4c" }
       }
     >

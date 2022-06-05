@@ -3,6 +3,7 @@ const app = express();
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
+const port = process.env.PORT || 8080;
 
 // for development
 // const io = require("socket.io")(server, {
@@ -12,18 +13,16 @@ const { Server } = require("socket.io");
 //     methods: ["GET", "POST"],
 //   },
 // });
+// **** //
 
 // for production
 const io = require("socket.io")(server);
-
-const port = process.env.PORT || 8080;
-
-// for production
 app.use(express.static(__dirname + "/frontend/build"));
 
 app.get("*", function (req, res) {
   res.sendFile(__dirname, "frontend/build", "/index.html");
 });
+// **** //
 
 // Socket IO
 io.on("connection", (socket) => {
@@ -65,6 +64,7 @@ io.on("connection", (socket) => {
       attack: data.attack,
       release: data.release,
       hold: data.hold,
+      basePitch: data.basePitch,
     };
     socket.to(data.room).emit("env", values);
   });

@@ -4,30 +4,15 @@ import { useRef } from "react";
 
 const Controls = ({ socket, userId, userName, count, id }) => {
   const refPitch = useRef();
-  const [basePitch] = useState(200);
 
   const [active, setActive] = useState(false);
 
   const handleChange = () => {
     socket.emit("pitch", {
-      pitch: basePitch + (basePitch * refPitch.current.value) / 12,
+      pitch: refPitch.current.value,
       user: userId,
     });
   };
-
-  useEffect(() => {
-    socket.emit("pitch", {
-      pitch: basePitch + (basePitch * refPitch.current.value) / 12,
-      user: userId,
-    });
-  }, [basePitch]);
-
-  useEffect(() => {
-    socket.emit("pitch", {
-      pitch: basePitch + (basePitch * refPitch.current.value) / 12,
-      user: userId,
-    });
-  }, []);
 
   useEffect(() => {
     if (count === id) {

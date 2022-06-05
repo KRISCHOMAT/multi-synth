@@ -4,23 +4,17 @@ import { useLocation } from "react-router-dom";
 import io from "socket.io-client";
 
 import Controls from "../components/Controls";
-//import useSocket from "../hooks/useSocket";
 
 function Admin() {
-  //const socket = io();
   const location = useLocation();
 
   const [name, setName] = useState();
   const [uuid, setUuid] = useState();
   const [socket, setSocket] = useState();
 
-  //const { socket } = useSocket("http://192.168.1.111:8080");
-  //const { socket } = useSocket();
-
   const [users, setUsers] = useState([]);
   const [usersCheck, setUsersCheck] = useState([]);
   const [count, setCount] = useState(0);
-  // const [basePitch, setBasePitch] = useState(130.813);
 
   const speedRef = useRef();
   const attackRef = useRef();
@@ -29,15 +23,21 @@ function Admin() {
   const basePitchRef = useRef();
   const countRef = useRef(0);
 
+  const didMountRef = useRef(false);
+
   const checkIfUserLeft = () => {
     const newUsers = users.filter((user) => usersCheck.includes(user.id));
     setUsers(newUsers);
   };
 
   useEffect(() => {
-    setName(location.state.name);
-    setUuid(location.state.uuid);
-    setSocket(io());
+    if (didMountRef.current) {
+      setName(location.state.name);
+      setUuid(location.state.uuid);
+      //setSocket(io.connect("http://localhost:8080"));
+      setSocket(io());
+    }
+    didMountRef.current = true;
   }, []);
 
   const handleChange = () => {
@@ -45,7 +45,7 @@ function Admin() {
       attack: attackRef.current.value,
       release: releaseRef.current.value,
       hold: holdRef.current.value,
-      basePitch: holdRef.current.value,
+      basePitch: parseFloat(basePitchRef.current.value),
       room: uuid,
     });
   };
@@ -166,7 +166,6 @@ function Admin() {
                 userId={user.id}
                 userName={user.name}
                 count={count}
-                //basePitch={parseFloat(basePitch)}
               />
             );
           })
