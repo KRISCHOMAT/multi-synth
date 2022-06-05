@@ -24,8 +24,6 @@ function User() {
   const [pitch, setPitch] = useState(1);
   const [basePitch, setBasePitch] = useState(200);
 
-  const didMountRef = useRef(false);
-
   const handleChange = (e) => {
     setLoginvalues((prevValues) => {
       return {
@@ -42,11 +40,8 @@ function User() {
   };
 
   useEffect(() => {
-    if (didMountRef.current) {
-      //setSocket(io.connect("http://localhost:8080"));
-      setSocket(io());
-    }
-    didMountRef.current = true;
+    //setSocket(io.connect("http://localhost:8080"));
+    setSocket(io());
   }, []);
 
   // init sockets when socket is available

@@ -23,21 +23,16 @@ function Admin() {
   const basePitchRef = useRef();
   const countRef = useRef(0);
 
-  const didMountRef = useRef(false);
-
   const checkIfUserLeft = () => {
     const newUsers = users.filter((user) => usersCheck.includes(user.id));
     setUsers(newUsers);
   };
 
   useEffect(() => {
-    if (didMountRef.current) {
-      setName(location.state.name);
-      setUuid(location.state.uuid);
-      //setSocket(io.connect("http://localhost:8080"));
-      setSocket(io());
-    }
-    didMountRef.current = true;
+    setName(location.state.name);
+    setUuid(location.state.uuid);
+    //setSocket(io.connect("http://localhost:8080"));
+    setSocket(io());
   }, []);
 
   const handleChange = () => {
