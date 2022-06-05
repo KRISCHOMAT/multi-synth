@@ -26,7 +26,6 @@ app.get("*", function (req, res) {
 
 // Socket IO
 io.on("connection", (socket) => {
-  console.log(socket.id);
   socket.on("enterUser", (data) => {
     const values = { id: socket.id, name: data.name };
     socket.join(data.roomId);
@@ -34,12 +33,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on("createRoom", (data) => {
-    console.log(data);
     socket.join(data.uuid);
   });
 
   socket.on("sendName", (data) => {
-    //socket.join(data.id);
     socket.to(data.id).emit("receiveRoomName", data.name);
   });
 
@@ -68,10 +65,6 @@ io.on("connection", (socket) => {
     };
     socket.to(data.room).emit("env", values);
   });
-
-  socket.on("leaving", (data) => {});
 });
 
-server.listen(port, () => {
-  console.log(`listening on port ${port}`);
-});
+server.listen(port, () => {});

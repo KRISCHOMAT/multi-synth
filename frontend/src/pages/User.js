@@ -67,7 +67,6 @@ function User() {
       });
 
       socket.on("pitch", (data) => {
-        console.log(data);
         setPitch(data);
       });
     }
