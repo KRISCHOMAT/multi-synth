@@ -23,20 +23,15 @@ function Admin() {
   const basePitchRef = useRef();
   const countRef = useRef(0);
 
-  const checkIfUserLeft = () => {
-    const newUsers = users.filter((user) => usersCheck.includes(user.id));
-    setUsers(newUsers);
-  };
-
   useEffect(() => {
     setName(location.state.name);
     setUuid(location.state.uuid);
-    //setSocket(io.connect("http://localhost:8080"));
+    //setSocket(io.connect("http://192.168.1.111:8080"));
     setSocket(io());
   }, []);
 
   const handleChange = () => {
-    socket.emit("env", {
+    socket.emit("data", {
       attack: attackRef.current.value,
       release: releaseRef.current.value,
       hold: holdRef.current.value,
@@ -49,6 +44,12 @@ function Admin() {
     return (speed * -1 + 101) * 20;
   };
 
+  const removeUser = (id) => {
+    const newUsers = users.filter((user) => user.id !== id);
+    setUsers(newUsers);
+    countRef.current = users.length;
+  };
+
   // listening for sockets when socket is available
   useEffect(() => {
     if (socket) {
@@ -56,7 +57,14 @@ function Admin() {
         setUsers((prev) => {
           return [...prev, { name: data.name, id: data.id }];
         });
-        socket.emit("sendName", { name, id: data.id });
+        socket.emit("initUser", {
+          name,
+          id: data.id,
+          attack: attackRef.current.value,
+          release: releaseRef.current.value,
+          hold: holdRef.current.value,
+          basePitch: parseFloat(basePitchRef.current.value),
+        });
       });
 
       socket.on("isHere", (data) => {
@@ -88,8 +96,6 @@ function Admin() {
       }
       setCount(count + 1);
       if (count >= countRef.current) {
-        checkIfUserLeft();
-        setUsersCheck([]);
         setCount(1);
       }
     }, speedRange(speedRef.current.value));
@@ -161,6 +167,7 @@ function Admin() {
                 userId={user.id}
                 userName={user.name}
                 count={count}
+                removeUser={removeUser}
               />
             );
           })
